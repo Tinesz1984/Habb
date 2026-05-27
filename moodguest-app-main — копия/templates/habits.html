@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Habits — HabitQuest{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">📋 My Habits</h1><p class="page-sub">Build consistency, earn XP, level up.</p></div>
+  <button class="btn-primary-header" onclick="toggleAddForm()">+ New Habit</button>
+</div>
+
+<div class="card add-habit-card" id="addHabitForm" style="display:none;margin-bottom:24px">
+  <h3 class="card-title" style="margin-bottom:16px">✨ Add New Habit</h3>
+  <form action="/habits/add" method="POST">
+    <div class="add-habit-row">
+      <div class="icon-picker-wrap">
+        <div class="icon-selected" id="selectedIcon" onclick="toggleIconPicker()">⭐</div>
+        <input type="hidden" name="icon" id="iconInput" value="⭐">
+        <div class="icon-grid" id="iconGrid" style="display:none">
+          {% for ico in icons %}<span class="ico-opt" onclick="selectIcon('{{ ico }}')">{{ ico }}</span>{% endfor %}
+        </div>
+      </div>
+      <input class="habit-name-input" name="name" placeholder="What habit do you want to build?" required>
+      <button class="btn-add-habit" type="submit">Add +20 XP</button>
+    </div>
+  </form>
+</div>
+
+{% if habits %}
+<div class="habits-grid">
+  {% for h in habits %}
+  <div class="habit-card {% if h.is_done_today() %}habit-done{% endif %}" id="habit-{{ h.id }}">
+    <div class="habit-card-top">
+      <div class="habit-card-icon">{{ h.icon }}</div>
+      <div class="habit-card-info">
+        <div class="habit-card-name">{{ h.name }}</div>
+        <div class="habit-card-meta">
+          {% if h.streak>0 %}<span class="streak-tag">🔥 {{ h.streak }} day{% if h.streak!=1 %}s{% endif %}</span>{% endif %}
+          {% if h.best_streak>1 %}<span class="best-tag">⭐ Best: {{ h.best_streak }}</span>{% endif %}
+        </div>
+      </div>
+      <form action="/habits/delete/{{ h.id }}" method="POST" onsubmit="return confirm('Delete this habit?')">
+        <button class="delete-habit-btn" type="submit" title="Delete">🗑</button>
+      </form>
+    </div>
+    <div class="habit-card-bottom">
+      {% if h.is_done_today() %}
+      <div class="completed-state"><span class="completed-check">✓</span><span>Completed today!</span></div>
+      {% else %}
+      <button class="complete-btn" onclick="completeHabit({{ h.id }})">
+        <span>✓ Mark Complete</span><span class="xp-chip">+20 XP</span>
+      </button>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state-large">
+  <div style="font-size:64px;margin-bottom:16px">🌱</div>
+  <h2>No habits yet!</h2>
+  <p>Start building your first habit to earn XP and begin your streak.</p>
+  <button class="btn-primary-full" style="max-width:240px;margin-top:16px" onclick="toggleAddForm()">+ Add First Habit</button>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+function toggleAddForm(){const f=document.getElementById('addHabitForm');f.style.display=f.style.display==='none'?'block':'none';}
+function toggleIconPicker(){const g=document.getElementById('iconGrid');g.style.display=g.style.display==='none'?'grid':'none';}
+function selectIcon(icon){document.getElementById('selectedIcon').textContent=icon;document.getElementById('iconInput').value=icon;document.getElementById('iconGrid').style.display='none';}
+async function completeHabit(id){
+  const btn=document.querySelector(`#habit-${id} .complete-btn`);
+  if(btn){btn.disabled=true;btn.innerHTML='<span>Completing...</span>';}
+  const res=await fetch(`/habits/complete/${id}`,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}});
+  const data=await res.json();
+  if(data.success){
+    showXpPopup('+'+data.xp_gained+' XP');
+    const card=document.getElementById(`habit-${id}`);
+    if(card){
+      card.classList.add('habit-done');
+      card.querySelector('.habit-card-bottom').innerHTML=`<div class="completed-state"><span class="completed-check">✓</span><span>Completed today!</span></div>`;
+      if(data.streak>0){
+        const meta=card.querySelector('.habit-card-meta');
+        if(meta){let s=meta.querySelector('.streak-tag');if(!s){s=document.createElement('span');s.className='streak-tag';meta.prepend(s);}s.textContent=`🔥 ${data.streak} day${data.streak!==1?'s':''}`;}
+      }
+    }
+    if(data.achievements&&data.achievements.length>0)data.achievements.forEach(a=>showToast('🏆 '+a.title+' unlocked!','achievement'));
+    updateXpBar(data.new_xp,data.level);
+  }
+}
+</script>
+{% endblock %}

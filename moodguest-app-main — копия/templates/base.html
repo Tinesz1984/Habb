@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{% block title %}HabitQuest{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo"><span class="logo-icon">🎯</span><span class="logo-text">HabitQuest</span></div>
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-item {% if request.path=='/dashboard' %}active{% endif %}"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+    <a href="/habits"    class="nav-item {% if request.path=='/habits'    %}active{% endif %}"><span class="nav-icon">📋</span><span class="nav-label">Habits</span></a>
+    <a href="/stats"     class="nav-item {% if request.path=='/stats'     %}active{% endif %}"><span class="nav-icon">📊</span><span class="nav-label">Stats</span></a>
+    <a href="/achievements" class="nav-item {% if request.path=='/achievements' %}active{% endif %}"><span class="nav-icon">🏆</span><span class="nav-label">Achievements</span></a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-avatar">{{ user.username[0].upper() }}</div>
+    <div class="user-info">
+      <div class="user-name">{{ user.username }}</div>
+      <div class="user-level"><span class="level-badge">LVL {{ level }}</span><span class="xp-text">{{ user.xp }} XP</span></div>
+      <div class="xp-bar-wrap"><div class="xp-bar" id="sidebar-xp-bar" style="width:{{ xp_pct }}%"></div></div>
+      <div class="xp-sub" id="sidebar-xp-sub">{{ xp_in_level }}/{{ xp_needed }} XP</div>
+    </div>
+    <a href="/logout" class="logout-btn" title="Logout">↩</a>
+  </div>
+</aside>
+<nav class="mobile-nav">
+  <a href="/dashboard"    class="mnav-item {% if request.path=='/dashboard'    %}active{% endif %}"><span>🏠</span><small>Home</small></a>
+  <a href="/habits"       class="mnav-item {% if request.path=='/habits'       %}active{% endif %}"><span>📋</span><small>Habits</small></a>
+  <a href="/stats"        class="mnav-item {% if request.path=='/stats'        %}active{% endif %}"><span>📊</span><small>Stats</small></a>
+  <a href="/achievements" class="mnav-item {% if request.path=='/achievements' %}active{% endif %}"><span>🏆</span><small>Awards</small></a>
+</nav>
+<main class="main-content">{% block content %}{% endblock %}</main>
+<div id="toast-container"></div>
+<div id="xp-popup" class="xp-popup hidden"><span id="xp-popup-text">+20 XP</span></div>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body></html>

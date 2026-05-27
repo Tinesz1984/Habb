@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Stats — HabitQuest{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">📊 Your Stats</h1><p class="page-sub">Last 7 days overview</p></div>
+</div>
+<div class="stats-summary">
+  <div class="stat-card green"><div class="stat-card-val">{{ summary.total_habits }}</div><div class="stat-card-label">Habits Completed</div><div class="stat-card-icon">✅</div></div>
+  <div class="stat-card orange"><div class="stat-card-val">{{ summary.max_streak }}</div><div class="stat-card-label">Best Streak</div><div class="stat-card-icon">🔥</div></div>
+  <div class="stat-card blue"><div class="stat-card-val">{{ summary.total_mood_logs }}</div><div class="stat-card-label">Mood Logs</div><div class="stat-card-icon">😊</div></div>
+  <div class="stat-card purple"><div class="stat-card-val">{{ summary.total_achievements }}</div><div class="stat-card-label">Achievements</div><div class="stat-card-icon">🏆</div></div>
+</div>
+<div class="two-col">
+  <div class="card"><h3 class="card-title" style="margin-bottom:16px">📋 Habit Completions (7 days)</h3><canvas id="habitChart" height="200"></canvas></div>
+  <div class="card"><h3 class="card-title" style="margin-bottom:16px">😊 Mood Trend (7 days)</h3><canvas id="moodChart" height="200"></canvas></div>
+</div>
+<div class="card" style="margin-top:24px">
+  <div class="card-header-row"><h3 class="card-title">⚡ XP &amp; Level</h3><span class="level-badge-lg">Level {{ level }}</span></div>
+  <div class="xp-stat-row">
+    <div class="xp-stat-item"><div class="xp-stat-val">{{ user.xp }}</div><div class="xp-stat-label">Total XP</div></div>
+    <div class="xp-stat-item"><div class="xp-stat-val">{{ xp_in_level }}/{{ xp_needed }}</div><div class="xp-stat-label">Current Level XP</div></div>
+    <div class="xp-stat-item"><div class="xp-stat-val">{{ xp_needed - xp_in_level }}</div><div class="xp-stat-label">XP to Next Level</div></div>
+  </div>
+  <div class="level-bar-wrap" style="margin-top:16px"><div class="level-bar" style="width:{{ xp_pct }}%"></div></div>
+  <div class="level-bar-label">{{ xp_pct }}% to Level {{ level+1 }}</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const habitData={{ habit_data|tojson }};
+const moodData={{ mood_data|tojson }};
+Chart.defaults.font.family="'Nunito',sans-serif";Chart.defaults.font.weight='700';
+new Chart(document.getElementById('habitChart'),{type:'bar',data:{labels:habitData.labels,datasets:[{label:'Habits Done',data:habitData.data,backgroundColor:'rgba(88,204,2,0.8)',borderRadius:8,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f0f0f0'}},x:{grid:{display:false}}}}});
+new Chart(document.getElementById('moodChart'),{type:'line',data:{labels:moodData.labels,datasets:[{label:'Mood',data:moodData.data,borderColor:'#1CB0F6',backgroundColor:'rgba(28,176,246,0.1)',borderWidth:3,pointBackgroundColor:'#1CB0F6',pointRadius:5,tension:0.4,fill:true,spanGaps:true}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{min:1,max:5,ticks:{stepSize:1,callback:v=>['','😢','😞','😐','😊','😄'][v]||v},grid:{color:'#f0f0f0'}},x:{grid:{display:false}}}}});
+</script>
+{% endblock %}

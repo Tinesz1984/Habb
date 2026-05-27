@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Achievements — HabitQuest{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">🏆 Achievements</h1><p class="page-sub">{{ unlocked_count }} of {{ total_count }} unlocked</p></div>
+  <div class="achievement-progress-pill">{{ unlocked_count }}/{{ total_count }}</div>
+</div>
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header-row"><h3 class="card-title">Overall Progress</h3><span style="font-weight:700;color:#58CC02">{{ ((unlocked_count/total_count)*100)|int }}%</span></div>
+  <div class="level-bar-wrap"><div class="level-bar" style="width:{{ ((unlocked_count/total_count)*100)|int }}%"></div></div>
+</div>
+<div class="achievements-grid">
+  {% for a in achievements %}
+  <div class="achievement-card {% if a.unlocked %}unlocked{% else %}locked{% endif %}">
+    <div class="ach-icon">{{ a.icon if a.unlocked else '🔒' }}</div>
+    <div class="ach-body">
+      <div class="ach-title">{{ a.title if a.unlocked else '???' }}</div>
+      <div class="ach-desc">{{ a.description if a.unlocked else 'Keep playing to unlock!' }}</div>
+    </div>
+    {% if a.unlocked %}<div class="ach-badge">✓</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+<div class="card hint-card" style="margin-top:24px">
+  <h3 class="card-title" style="margin-bottom:12px">💡 How to earn achievements</h3>
+  <div class="hint-grid">
+    <div class="hint-item"><span>📋</span> Complete habits daily</div>
+    <div class="hint-item"><span>🔥</span> Build long streaks</div>
+    <div class="hint-item"><span>😊</span> Log your mood every day</div>
+    <div class="hint-item"><span>⚡</span> Earn XP to level up</div>
+  </div>
+</div>
+{% endblock %}

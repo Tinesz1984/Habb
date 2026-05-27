@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HabitQuest — Start Your Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#58CC02 0%,#1CB0F6 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-wrapper{display:flex;width:100%;max-width:900px;border-radius:24px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.25)}
+.auth-hero{background:linear-gradient(160deg,#58CC02,#46A302);padding:60px 40px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-align:center}
+.hero-emoji{font-size:80px;margin-bottom:20px;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.hero-title{font-size:32px;font-weight:900;margin-bottom:10px}
+.hero-sub{font-size:16px;opacity:.9;line-height:1.6}
+.feat-list{margin-top:30px;text-align:left}
+.feat-item{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px;font-weight:600}
+.auth-panel{background:white;padding:50px 40px;flex:1;display:flex;flex-direction:column;justify-content:center}
+.auth-title{font-size:26px;font-weight:900;color:#3C3C3C;margin-bottom:6px}
+.auth-sub{color:#777;font-size:14px;margin-bottom:28px}
+.tab-row{display:flex;gap:8px;margin-bottom:24px}
+.tab-btn{flex:1;padding:10px;border:2px solid #E5E5E5;border-radius:12px;background:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;color:#aaa;transition:.2s}
+.tab-btn.active{border-color:#58CC02;color:#58CC02;background:#f0fff0}
+.auth-form{display:none}.auth-form.active{display:block}
+.input-group{margin-bottom:16px}
+.input-group label{display:block;font-size:13px;font-weight:700;color:#555;margin-bottom:6px}
+.input-group input{width:100%;padding:13px 16px;border:2px solid #E5E5E5;border-radius:12px;font-family:'Nunito',sans-serif;font-size:15px;outline:none;transition:.2s;color:#3C3C3C}
+.input-group input:focus{border-color:#58CC02;box-shadow:0 0 0 3px rgba(88,204,2,.15)}
+.btn-primary{width:100%;padding:14px;background:#58CC02;border:none;border-radius:12px;color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:.2s;margin-top:8px;box-shadow:0 4px 0 #46A302}
+.btn-primary:hover{background:#50b800;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #46A302}
+.flash-error{background:#fff0f0;border:2px solid #FF4B4B;border-radius:10px;color:#FF4B4B;padding:10px 14px;font-size:14px;font-weight:600;margin-bottom:16px}
+@media(max-width:640px){.auth-hero{display:none}.auth-panel{padding:40px 24px}}
+</style>
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-hero">
+    <div class="hero-emoji">🎯</div>
+    <div class="hero-title">HabitQuest</div>
+    <div class="hero-sub">Build habits. Earn XP.<br>Level up your life.</div>
+    <div class="feat-list">
+      <div class="feat-item"><span>🔥</span><span>Streak tracking</span></div>
+      <div class="feat-item"><span>⭐</span><span>XP &amp; levels</span></div>
+      <div class="feat-item"><span>🏆</span><span>Achievements</span></div>
+      <div class="feat-item"><span>📊</span><span>Progress charts</span></div>
+      <div class="feat-item"><span>😊</span><span>Mood tracking</span></div>
+    </div>
+  </div>
+  <div class="auth-panel">
+    <div class="auth-title">Welcome!</div>
+    <div class="auth-sub">Your habit journey starts here</div>
+    {% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}{% for cat,msg in messages %}<div class="flash-error">⚠️ {{msg}}</div>{% endfor %}{% endif %}{% endwith %}
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('login',this)">Sign In</button>
+      <button class="tab-btn" onclick="switchTab('register',this)">Create Account</button>
+    </div>
+    <form class="auth-form active" id="form-login" action="/login" method="POST">
+      <div class="input-group"><label>Username</label><input name="username" placeholder="Enter your username" required autocomplete="username"></div>
+      <div class="input-group"><label>Password</label><input name="password" type="password" placeholder="Enter your password" required></div>
+      <button class="btn-primary" type="submit">Sign In 🚀</button>
+    </form>
+    <form class="auth-form" id="form-register" action="/register" method="POST">
+      <div class="input-group"><label>Choose a Username</label><input name="username" placeholder="Cool username (3+ chars)" required autocomplete="username"></div>
+      <div class="input-group"><label>Create Password</label><input name="password" type="password" placeholder="At least 4 characters" required></div>
+      <button class="btn-primary" type="submit">Start Quest 🎯</button>
+    </form>
+  </div>
+</div>
+<script>
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('form-'+tab).classList.add('active');
+}
+</script>
+</body></html>

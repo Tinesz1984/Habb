@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — HabitQuest{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Good day, {{ user.username }}! 👋</h1><p class="page-sub">Keep the streak alive — every habit counts.</p></div>
+  <div class="header-streak"><span class="streak-fire">🔥</span><span class="streak-num">{{ summary_streak }}</span></div>
+</div>
+
+<div class="quote-card">
+  <div class="quote-icon">💬</div>
+
+  <div>
+    <p class="quote-text">
+      "{{ quote['content'] }}"
+    </p>
+
+    {% if quote['author'] %}
+      <p class="quote-author">
+        — {{ quote['author'] }}
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="stat-strip">
+  <div class="stat-chip green"><span class="stat-chip-val">{{ done_today }}/{{ total_today }}</span><span class="stat-chip-label">Today Done</span></div>
+  <div class="stat-chip blue"><span class="stat-chip-val">{{ user.xp }}</span><span class="stat-chip-label">Total XP</span></div>
+  <div class="stat-chip orange"><span class="stat-chip-val">LVL {{ level }}</span><span class="stat-chip-label">Level</span></div>
+  <div class="stat-chip purple"><span class="stat-chip-val">{{ xp_pct }}%</span><span class="stat-chip-label">To Next LVL</span></div>
+</div>
+
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header-row"><h3 class="card-title">⚡ Level Progress</h3><span class="level-badge-lg">Level {{ level }}</span></div>
+  <div class="level-bar-wrap"><div class="level-bar" style="width:{{ xp_pct }}%"></div></div>
+  <div class="level-bar-label">{{ xp_in_level }} / {{ xp_needed }} XP to Level {{ level+1 }}</div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header-row"><h3 class="card-title">📋 Today's Habits</h3><a href="/habits" class="link-btn">See all →</a></div>
+    {% if habits %}
+    <div class="habit-mini-list">
+      {% for h in habits %}
+      <div class="habit-mini-item {% if h.is_done_today() %}done{% endif %}" id="habit-dash-{{ h.id }}">
+        <div class="habit-mini-left">
+          <span class="habit-icon-sm">{{ h.icon }}</span>
+          <div><div class="habit-mini-name">{{ h.name }}</div>{% if h.streak>0 %}<div class="habit-mini-streak">🔥 {{ h.streak }} day streak</div>{% endif %}</div>
+        </div>
+        {% if h.is_done_today() %}<div class="done-badge">✓ Done!</div>
+        {% else %}<button class="check-btn" onclick="completeHabit({{ h.id }},'dash')">✓</button>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="empty-emoji">📋</div><p>No habits yet!</p><a href="/habits" class="btn-sm-primary">Add your first habit</a></div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3 class="card-title" style="margin-bottom:16px">😊 Today's Mood</h3>
+    {% if mood_logged %}
+    <div class="mood-logged">
+      <div class="mood-big-emoji">{% if last_mood %}{{ last_mood.emoji }}{% else %}😊{% endif %}</div>
+      <p class="mood-logged-text">Mood logged! Come back tomorrow.</p>
+      {% if last_mood and last_mood.note %}<p class="mood-note-display">💭 "{{ last_mood.note }}"</p>{% endif %}
+    </div>
+    {% else %}
+    <form action="/log_mood" method="POST">
+      <p class="mood-prompt">How are you feeling today?</p>
+      <div class="mood-picker">
+        <label class="mood-opt"><input type="radio" name="mood" value="1" required><span class="mood-emoji">😢</span><small>Terrible</small></label>
+        <label class="mood-opt"><input type="radio" name="mood" value="2"><span class="mood-emoji">😞</span><small>Bad</small></label>
+        <label class="mood-opt"><input type="radio" name="mood" value="3" checked><span class="mood-emoji">😐</span><small>Okay</small></label>
+        <label class="mood-opt"><input type="radio" name="mood" value="4"><span class="mood-emoji">😊</span><small>Good</small></label>
+        <label class="mood-opt"><input type="radio" name="mood" value="5"><span class="mood-emoji">😄</span><small>Amazing</small></label>
+      </div>
+      <input class="note-input" name="note" placeholder="Optional note... how was your day?">
+      <button class="btn-primary-full" type="submit">Log Mood +10 XP</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function completeHabit(id, ctx) {
+  const res = await fetch(`/habits/complete/${id}`, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}});
+  const data = await res.json();
+  if (data.success) {
+    showXpPopup('+' + data.xp_gained + ' XP');
+    if (ctx === 'dash') {
+      const el = document.getElementById(`habit-dash-${id}`);
+      if (el) { el.classList.add('done'); el.querySelector('.check-btn').outerHTML='<div class="done-badge">✓ Done!</div>'; }
+    }
+    if (data.achievements && data.achievements.length > 0)
+      data.achievements.forEach(a => showToast('🏆 '+a.title+' unlocked!','achievement'));
+    updateXpBar(data.new_xp, data.level);
+  }
+}
+</script>
+{% endblock %}
